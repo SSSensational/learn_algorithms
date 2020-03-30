@@ -1,6 +1,7 @@
 const Benchmark = require('benchmark');
 const { selection } = require('../selection/index');
 const { sleep } = require('../sleep/index');
+const { abacus } = require('../abacus/index');
 const { bubble1, bubble2, bubble3, bubble4 } = require('../bubble/index');
 const { quick1, quick2, quick3, quick4, quick5 } = require('../quick/index');
 const { insertion1, insertion2 } = require('../insertion/index');
@@ -15,12 +16,14 @@ const { shuffle } = require('../shuffle/index');
 const suite = new Benchmark.Suite;
 const testArr = [];
 for (let i = 0; i < 50; i++) {
-    testArr.push(Array.from({ length: Math.floor((Math.random() * 2333) + 1) }, (_, index) => index + 1));
+    testArr.push(Array.from({ length: Math.floor((Math.random() * 2333) + 1) }, () => Math.floor(Math.random() * 52)));
     shuffle(testArr[i]);
 }
 const sortFunc = (a, b) => a - b;
 
-suite.add('sleep', function() {
+suite.add('abacus', function() {
+    for (let i = 0; i < testArr.length; i++) abacus(testArr[i].slice());
+}).add('sleep', function() {
     for (let i = 0; i < testArr.length; i++) sleep(testArr[i].slice(), () => 0);
 }).add('selection', function() {
     for (let i = 0; i < testArr.length; i++) selection(testArr[i].slice());
@@ -69,6 +72,6 @@ suite.add('sleep', function() {
     console.log(String(event.target));
 })
 .on('complete', function() {
-    console.log('With no repeat data arr, fastest is ' + this.filter('fastest').map('name'));
+    console.log('With repeat data arr, fastest is ' + this.filter('fastest').map('name'));
 })
 .run({ 'async': true });

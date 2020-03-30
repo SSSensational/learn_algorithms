@@ -48,13 +48,13 @@ function partitionThreely(arr, startIndex, endIndex) {
     let right = endIndex;
     let mark = startIndex + 1;
     while (left <= right) {
-      if (arr[left] > arr[startIndex]) {
-        swap(arr, right, left);
-        right--;                                                                                                                                                                                                                                                                                                                                  
-      } else if (arr[left] < arr[startIndex]) {
-          if (mark !== left) swap(arr, left - mark, left);
-          left++;
-          mark++;
+        if (arr[left] > arr[startIndex]) {
+            swap(arr, right, left);
+            right--;                                                                                                                                                                                                                                                                                                                                  
+        } else if (arr[left] < arr[startIndex]) {
+            if (mark !== left) swap(arr, mark, left);
+            left++;
+            mark++;
       } else left++;
     }
     swap(arr, startIndex, right);
@@ -69,16 +69,43 @@ function quick3 (arr, startIndex = 0, endIndex = arr.length - 1) {
     return arr;
 }
 
+function quick4 (arr, startIndex = 0, endIndex = arr.length - 1) {
+    if (!arr.length) return arr;
+    const stack = [];
+    const rootParam = new Map();
+    rootParam.set("startIndex", startIndex);
+    rootParam.set("endIndex", endIndex);
+    stack.push(rootParam);
+    while (stack.length) {
+        const param = stack.pop();
+        const [pivotLeft, pivotRight] = partitionThreely(arr, param.get('startIndex'), param.get('endIndex'));
+        if (param.get('startIndex') < pivotLeft - 1) {
+            const leftParam = new Map();
+            leftParam.set("startIndex", param.get('startIndex'));
+            leftParam.set("endIndex", pivotLeft - 1);
+            stack.push(leftParam);
+        }
+        if (param.get('endIndex') > pivotRight + 1) {
+            const rightParam = new Map();
+            rightParam.set("startIndex", pivotRight + 1);
+            rightParam.set("endIndex", param.get('endIndex'));
+            stack.push(rightParam);
+        }
+    }
+    return arr;
+}
 
-const quick4 = arr => arr.length < 1 ? arr : [
-    ...quick1(arr.filter(x => x < arr[0])),
+
+const quick5 = arr => arr.length < 1 ? arr : [
+    ...quick5(arr.filter(x => x < arr[0])),
     ...arr.filter(x => x === arr[0]),
-    ...quick1(arr.filter(x => x > arr[0]))
+    ...quick5(arr.filter(x => x > arr[0]))
 ]
 
 module.exports = {
     quick1,
     quick2,
     quick3,
-    quick4
+    quick4,
+    quick5
 };

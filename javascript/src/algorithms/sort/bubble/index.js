@@ -1,4 +1,4 @@
-const { returnNewArr, swap } = require('../../../utils');
+const { swap } = require('../../../utils');
 
 // 时间复杂度O(n²)
 function bubble1 (arr) {

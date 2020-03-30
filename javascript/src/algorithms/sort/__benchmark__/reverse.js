@@ -10,14 +10,14 @@ const { heap } = require('../heap/index');
 const { count3 } = require('../count/index');
 const { bucket } = require('../bucket/index');
 const { radix } = require('../radix/index');
-const { shuffle } = require('../shuffle/index');
 
 const suite = new Benchmark.Suite;
 const testArr = [];
 for (let i = 0; i < 50; i++) {
     testArr.push(Array.from({ length: Math.floor((Math.random() * 2333) + 1) }, (_, index) => index + 1));
-    shuffle(testArr[i]);
+    testArr[i].reverse();
 }
+
 const sortFunc = (a, b) => a - b;
 
 suite.add('sleep', function() {
@@ -69,6 +69,6 @@ suite.add('sleep', function() {
     console.log(String(event.target));
 })
 .on('complete', function() {
-    console.log('With no repeat data arr, fastest is ' + this.filter('fastest').map('name'));
+    console.log('With reversed no repeat data arr, fastest is ' + this.filter('fastest').map('name'));
 })
 .run({ 'async': true });
