@@ -1,9 +1,24 @@
 class LinkedList {
-    constructor(headNode) {
-        this.size = headNode ? 1 : 0;
-        this.tail = this.head = headNode ? new Node(headNode, this) : null;
+    constructor(initData) {
+        this.size = 0;
+        this.tail = this.head = null;
+        if (Array.isArray(initData)) {
+            initData.forEach((nodeData, index) => {
+                if (nodeData === null || nodeData === undefined) throw new Error(`Node data can not be null or undefined, node data index as ${index} is ${nodeData}`);
+                this.insert(nodeData);
+            });
+        } else {
+            const headNode = initData;
+            this.size = headNode ? 1 : 0;
+            this.tail = this.head = headNode ? new Node(headNode, this) : null;
+        }
     }
     
+    clear () {
+        this.size = 0;
+        this.tail = this.head = null;
+    }
+
     insert(data, index = this.size + 1) {
         if (index < 1 || index > this.size + 1) throw new Error('Index out of list range');
         const insertNode = new Node(data, this);
@@ -30,6 +45,8 @@ class LinkedList {
     find(search) {
         if (typeof search !== 'number' && typeof search !== 'function') throw new Error('Get param require index number or search function');
         if (typeof search === 'number' && (search < 1 || search > this.size)) throw new Error('Get search index out of list range');
+        if (search === this.size) return this.tail;
+        else if (search === 1) return this.head;
         let target = this.head;
         for (let i = 1; i <= this.size; i++) {
             if ((typeof search === 'number' && i === search) || (typeof search === 'function' && search(target))) return target;
@@ -38,7 +55,7 @@ class LinkedList {
         return null;
     }
 
-    delete(search) {
+    delete(search = this.size) {
         if (typeof search !== 'number' && typeof search !== 'function') throw new Error('Delete param require index number or search function');
         if (typeof search === 'number' && (search < 1 || search > this.size)) throw new Error('Delete search index out of list range');
         const targetNode = this.find(search);
@@ -51,8 +68,8 @@ class LinkedList {
         return targetNode;
     }
 
-    toObjData(translate) {
-        if (typeof translate !== 'function') throw new Error('ToObjData param require translate function');
+    toObj(translate) {
+        if (typeof translate !== 'function') throw new Error('ToObj param require translate function');
         const objData = {};
         let temp = this.head;
         while (temp) {
@@ -63,6 +80,16 @@ class LinkedList {
             temp = temp.next;
         }
         return objData;
+    }
+
+    toArr() {
+        const resArr = [];
+        let temp = this.head;
+        while (temp) {
+            resArr.push(temp.data);
+            temp = temp.next;
+        }
+        return resArr;
     }
 }
 

@@ -26,8 +26,8 @@ function partitionDoubly(arr, startIndex, endIndex) {
     let left = startIndex;
     let right = endIndex;
     while (left !== right) {
-        while(left < right && arr[right] > arr[startIndex]) right--;
-        while(left < right && arr[left] <= arr[startIndex]) left++;
+        while (left < right && arr[right] > arr[startIndex]) right--;
+        while (left < right && arr[left] <= arr[startIndex]) left++;
         swap(arr, left, right);
     }
     swap(arr, startIndex, left);
