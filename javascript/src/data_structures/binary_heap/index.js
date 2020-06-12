@@ -9,8 +9,7 @@ class MinBinaryHeap {
         return arr;
     }
 
-    static upAdjust(arr = this.arr) {
-        let childIndex = arr.length - 1;
+    static upAdjust(arr = this.arr, childIndex = arr.length - 1) {
         let parentIndex = Math.floor((childIndex - 1) / 2);
         let temp = arr[childIndex];
         while (childIndex > 0 && temp < arr[parentIndex]) {
@@ -23,6 +22,7 @@ class MinBinaryHeap {
     }
 
     static downAdjust(arr = this.arr, parentIndex = 0, length = arr.length) {
+        if (length === 0) return arr;
         let temp = arr[parentIndex];
         let childIndex = parentIndex * 2 + 1;
         while (childIndex < length) {
@@ -52,8 +52,7 @@ class MaxBinaryHeap {
         return arr;
     }
 
-    static upAdjust(arr = this.arr) {
-        let childIndex = arr.length - 1;
+    static upAdjust(arr = this.arr, childIndex = arr.length - 1) {
         let parentIndex = Math.floor((childIndex - 1) / 2);
         let temp = arr[childIndex];
         while (childIndex > 0 && temp > arr[parentIndex]) {
@@ -66,6 +65,7 @@ class MaxBinaryHeap {
     }
 
     static downAdjust(arr = this.arr, parentIndex = 0, length = arr.length) {
+        if (length === 0) return arr;
         let temp = arr[parentIndex];
         let childIndex = parentIndex * 2 + 1;
         while (childIndex < length) {

@@ -12,11 +12,13 @@ const sum = (n, prevSum = 0) => {
     if (n <= 1) return n + prevSum;
     return () => sum(n - 1, n + prevSum)
 }
+
 const trampoline = f => (...args) => {
     let result = f(...args);
     while (typeof result === 'function') result = result();
     return result;
 }
+
 const sum3 = trampoline(sum);
 
 // console.log(sum1(1000000))

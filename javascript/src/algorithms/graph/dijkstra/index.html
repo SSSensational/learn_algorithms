@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="dijkstra" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='./d3.min.js'></script>
+    <script src='./algorithms/dijkstra.js' type="module"></script>
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+</head>
+<body>
+    <svg width="600" height="600">
+        <defs>
+            <marker
+                id="arrow" 
+                markerUnits="strokeWidth" 
+                markerWidth="12" 
+                markerHeight="12" 
+                viewBox="0 0 12 12" 
+                refX="6" 
+                refY="6" 
+                orient="auto"
+            >
+                <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
+            </marker>
+        </defs>
+        <g id="line"></g>
+        <g id="line_length"></g>
+        <g id="circle"></g>
+        <g id="circle_id"></g>
+    </svg>
+    <div>
+        <button id="show_result" disabled>显示最短路径</button>
+        <button id="clear" disabled>清空节点</button>
+    </div>
+    <select id="select"></select>
+    <script type="module">
+        import dijkstra from './algorithms/dijkstra.js';
+        console.log(dijkstra)
+        let vertexId = 0, edgeFrom;
+        let vertexData = [], lines = [];
+        const svg = document.querySelector("svg");
+        const context = d3.path();
+        const drawArea = d3.select(svg);
+        const radius = 20;
+        const circleGroup = drawArea.select("#circle").attr("cursor", "grab");
+        const circleIdGroup = drawArea.select("#circle_id");
+        const lineGroup = drawArea.select("#line");
+        const lineLengthGroup = drawArea.select("#line_length");
+
+        function drawLines(clear) {
+            lines = clear ? [] :
+                vertexData.filter(vertex => vertex.edges.length)
+                    .map(fromVertex => fromVertex.edges.map(toVertexId => {
+                        const toVertex = vertexData.find(vertex => vertex.id === toVertexId);
+                        return ({ x1: fromVertex.x, y1: fromVertex.y, x2: toVertex.x, y2: toVertex.y });
+                    }))
+                    .flat();
+            lineGroup.selectAll('line')
+                .data(lines)
+                .join('line')
+                .attr("x1", ({ x1 }) => x1)
+                .attr("y1", ({ y1 }) => y1)
+                .attr("x2", ({ x1, x2, y1, y2 }) => x2 - (x2 > x1 ? 1 : -1) * (radius + 8) * Math.abs(x2 - x1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)))
+                .attr("y2", ({ x1, x2, y1, y2 }) => y2 - (y2 > y1 ? 1 : -1) * (radius + 8) * Math.abs(y2 - y1) / Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)))
+                .attr("stroke", "black")
+                .attr("stroke-width", 2)
+                .attr("marker-end","url(#arrow)");
+            lineGroup.selectAll('svg').data(lines).exit().remove();
+            lineLengthGroup.selectAll("text")
+                .data(lines)
+                .join("text")
+                .attr('stroke', 'green')
+                .attr("x", ({ x1, x2 }) => (x1 + x2) / 2)
+                .attr("y", ({ y1, y2 }) => (y1 + y2) / 2)
+                .attr('style', 'pointer-events: none;user-select: none;')
+                .text(({ x1, x2, y1, y2 }) => parseInt(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))) - radius * 2);
+        }
+
+        function drawCircles() {
+            circleGroup.selectAll("circle")
+                .data(vertexData)
+                .join("circle")
+                .attr("cx", ({ x }) => x)
+                .attr("cy", ({ y }) => y)
+                .attr("r", radius)
+                .attr("fill", vertex => edgeFrom === vertex ? 'red' : 'black')
+                .on('click', function(vertex) {
+                    d3.event.stopPropagation();
+                    if (!edgeFrom) edgeFrom = vertex;
+                    else {
+                        if (!edgeFrom.edges.includes(vertex.id)) {
+                            edgeFrom.edges.push(vertex.id);
+                            drawLines();
+                        }
+                        edgeFrom = null;
+                    }
+                    // console.log(vertexData)
+                });
+            circleIdGroup.selectAll("text")
+                .data(vertexData)
+                .join("text")
+                .attr('stroke', '#fff')
+                .attr("x", ({ x }) => x - radius / 4)
+                .attr("y", ({ y }) => y + radius / 3.5)
+                .attr('style', 'pointer-events: none;user-select: none;')
+                .text(vertex => vertex.id);
+        }
+
+        function bindDrag() {
+            const simulation = d3.forceSimulation(vertexData)
+                .force("collide", d3.forceCollide(radius + 10).iterations(4))
+                .on("tick", drawCircles)
+
+            function dragsubject() {
+                return simulation.find(d3.event.x, d3.event.y, radius);
+            }
+            
+            function dragstarted(vertex) {
+                if (vertex === edgeFrom) edgeFrom = null;
+                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                d3.event.subject.fx = d3.event.subject.x;
+                d3.event.subject.fy = d3.event.subject.y;
+                drawLines(true);
+            }
+
+            function dragged() {
+                d3.event.subject.fx = d3.event.x;
+                d3.event.subject.fy = d3.event.y;
+            }
+
+            function dragended() {
+                if (!d3.event.active) simulation.alphaTarget(0);
+                d3.event.subject.fx = null;
+                d3.event.subject.fy = null;
+                drawLines();
+            }
+            
+            circleGroup.selectAll("circle")
+                .data(vertexData)
+                .join("circle")
+                .call(
+                    d3.drag()
+                    .container(svg)
+                    .subject(dragsubject)
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended)
+                );
+        }
+
+        const showResultBtn = document.querySelector("#show_result");
+        const clearBtn = document.querySelector("#clear");
+        const select = document.querySelector("#select");
+
+        drawArea.on('click', function() {
+            edgeFrom = null;
+            const mouse = d3.mouse(this);
+            vertexData.push({ id: vertexId++, x: mouse[0], y: mouse[1], edges: [] });
+            drawCircles();
+            bindDrag();
+            clearBtn.disabled = false;
+            showResultBtn.disabled = false;
+            d3.select(select)
+                .selectAll("option")
+                .data(vertexData)
+                .join("option")
+                .attr('value', vertex => vertex.id)
+                .text(vertex => vertex.id);
+        });
+
+        d3.select('#clear').on('click', function() {
+            vertexId = 0;
+            clearBtn.disabled = true;
+            showResultBtn.disabled = true;
+            edgeFrom = null;
+            vertexData = [];
+            drawCircles();
+            drawLines();
+            d3.select(select)
+                .selectAll("option")
+                .data(vertexData)
+                .exit()
+                .remove();
+        });
+
+        d3.select('#show_result').on('click', function() {
+            console.log(select.value)
+        });
+
+    </script>
+</body>
+</html>

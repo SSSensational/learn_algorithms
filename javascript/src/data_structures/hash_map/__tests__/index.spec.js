@@ -14,7 +14,7 @@ describe('HashMap/', () => {
         expect(map.get(1)).toBe('abc');
 
         map.set({}, 123)
-        expect(map.get({})).toBe(null);
+        expect(map.get({})).toBe(undefined);
 
         const keyObj = {};
         map.set(keyObj, { value: 'value' })
@@ -36,6 +36,9 @@ describe('HashMap/', () => {
 
         map.set(undefined, 234)
         expect(map.get(undefined)).toBe(234);
+
+        map.clear();
+        expect(map.get(undefined)).toBe(undefined);
     });
 
 });

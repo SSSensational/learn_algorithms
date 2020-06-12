@@ -28,15 +28,15 @@ class HashMap {
 
     get(key) {
         const index = this.getIndex(key);
-        const res = this.array[index] ? this.array[index].find(node => node.data.key === key) : null;
-        return res ? res.data.value : null;
+        const res = this.array[index] ? this.array[index].find(node => node.data.key === key) : undefined;
+        return res ? res.data.value : undefined;
     }
 
     delete(key) {
         const index = this.getIndex(key);
-        if (!this.array[index]) return null;
+        if (!this.array[index]) return undefined;
         const res = this.array[index].delete(node => node.data.key === key);
-        return res ? res.data.value : null;
+        return res ? res.data.value : undefined;
     }
 
     clear() {
